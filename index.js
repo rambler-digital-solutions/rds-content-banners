@@ -1,27 +1,58 @@
-var objectAssign = require('object-assign');
-
 var defaults = {
   offset: 1000,
-  haveToBeAtLeast: 500
+  haveToBeAtLeast: 500,
+  method: 'sspScroll'
 };
 
-function setStyle(node, style) {
-  if (!style) {
-    return node;
+var getOwnPropertySymbols = Object.getOwnPropertySymbols;
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+var propIsEnumerable = Object.prototype.propertyIsEnumerable;
+
+function toObject(val) {
+  if (val === null || val === undefined) {
+    throw new TypeError('Object.assign cannot be called with null or undefined');
   }
 
-  for (var i in style) {
-    node.style[i] = style[i];
+  return Object(val);
+}
+
+function objectAssign(target, source) {
+  var from;
+  var to = toObject(target);
+  var symbols;
+
+  for (var s = 1; s < arguments.length; s++) {
+    from = Object(arguments[s]);
+
+    for (var key in from) {
+      if (hasOwnProperty.call(from, key)) {
+        to[key] = from[key];
+      }
+    }
+
+    if (getOwnPropertySymbols) {
+      symbols = getOwnPropertySymbols(from);
+      for (var i = 0; i < symbols.length; i++) {
+        if (propIsEnumerable.call(from, symbols[i])) {
+          to[symbols[i]] = from[symbols[i]];
+        }
+      }
+    }
   }
 
-  return node;
+  return to;
 }
 
 function buildRootSelector(root, nodes) {
-  return nodes.map(tag => `${root} > ${tag}`).join(', ');
+  var parts = [];
+  for (var i = 0; i < nodes.length; i++) {
+    parts.push(root + ' > ' + tag);
+  }
+
+  return parts.join(', ');
 }
 
-function getLength(nodes, index) {
+function getNodesLength(nodes, index) {
   var result = 0;
   for (var i = index; i < nodes.length; i++) {
     var node = nodes[i];
@@ -71,6 +102,26 @@ function isApprovedByNext(nodes, index, place, floats) {
   return false;
 }
 
+function drawPlace(id, place) {
+  var methodArguments;
+  switch (place.method) {
+    case 'show':
+    case 'showRich':
+    case 'showScroll':
+      methodArguments = [id, place.bannerOptions, place.className];
+      break;
+    case 'show_b':
+    case 'showScroll_b':
+    case 'ssp':
+    case 'sspScroll':
+    case 'sspRich':
+      methodArguments = [id, place.bannerOptions, place.begunOptions, place.className];
+      break;
+  }
+
+  window.Adf.banner[place.method].apply(window.Adf.banner, methodArguments);
+}
+
 function fillPlaces(nodes, places, floats) {
   var index = 0;
   var stdout = '';
@@ -87,7 +138,7 @@ function fillPlaces(nodes, places, floats) {
         // get flags
         var isTooLong = stdout.length > place.offset;
         var isAllowedByLength = place.haveToBeAtLeast
-          ? getLength(nodes, ii) > place.haveToBeAtLeast : true;
+          ? getNodesLength(nodes, ii) > place.haveToBeAtLeast : true;
 
         // append mock if needed
         if (isTooLong
@@ -100,9 +151,9 @@ function fillPlaces(nodes, places, floats) {
           index = ii + 1;
 
           // append mock for the place
-          var mock = setStyle(document.createElement('div'), place.style);
-          mock.innerHTML = `#${place.index + 1} - ${place.name}`;
-          node.insertAdjacentHTML('afterEnd', mock.outerHTML);
+          var id = 'content-banner-' + index;
+          node.insertAdjacentHTML('afterEnd', '<div id="' + id + '"></div>');
+          drawPlace(id, place);
           break;
         }
       }
@@ -123,6 +174,19 @@ function validateProperty(source, path, type) {
   }
 }
 
+function deduplicate(array) {
+  var result = [];
+  var cache = {};
+  for (var value in array) {
+    if (!cache[value]) {
+      result.push(value);
+    }
+  }
+
+  cache = null;
+  return result;
+}
+
 module.exports = function(options) {
   validateProperty(options, 'root', 'string');
   validateProperty(options, 'places', 'array');
@@ -134,13 +198,19 @@ module.exports = function(options) {
     var place = objectAssign({}, defaults, options.places[i], { index: i });
     validateProperty(options, 'places.' + i + '.offset', 'number');
     validateProperty(options, 'places.' + i + '.haveToBeAtLeast', 'number');
-    validateProperty(options, 'places.' + i + '.callback', 'function');
+    validateProperty(options, 'places.' + i + '.className', 'string');
+    validateProperty(options, 'places.' + i + '.method', 'string');
+    validateProperty(options, 'places.' + i + '.bannerOptions', 'object');
     places.push(place);
   }
 
+  // merge and deduplicate selectors
+  var floatsSelectors = options.floats;
+  var nodesSelectors = deduplicate(options.nodes.concat(floatsSelectors));
+
   // get nodes lists
-  var nodesList = document.querySelectorAll(buildRootSelector(options.root, options.nodes));
-  var floatsList = document.querySelectorAll(buildRootSelector(options.root, options.floats));
+  var nodesList = document.querySelectorAll(buildRootSelector(options.root, nodesSelectors));
+  var floatsList = document.querySelectorAll(buildRootSelector(options.root, floatsSelectors));
 
   // convert lists to the arrays
   var nodes = Array.prototype.slice.call(nodesList);
@@ -149,5 +219,3 @@ module.exports = function(options) {
   // fill the places
   fillPlaces(nodes, places, floats);
 };
-
-
