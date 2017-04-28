@@ -1,0 +1,14 @@
+{
+  "name": "advert",
+  "version": "1.0.0",
+  "description": "",
+  "main": "advert.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "object-assign": "^4.1.1"
+  }
+}
