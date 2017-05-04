@@ -177,9 +177,11 @@ function validateProperty(source, path, type) {
 function deduplicate(array) {
   var result = [];
   var cache = {};
-  for (var value in array) {
+  for (var i in array) {
+    var value = array[i];
     if (!cache[value]) {
       result.push(value);
+      cache[value] = true;
     }
   }
 
