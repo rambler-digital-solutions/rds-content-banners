@@ -45,7 +45,8 @@ function objectAssign(target, source) {
 
 function buildRootSelector(root, nodes) {
   var parts = [];
-  for (var i = 0; i < nodes.length; i++) {
+  for(var i in nodes) {
+    var tag = nodes[i];
     parts.push(root + ' > ' + tag);
   }
 
