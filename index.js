@@ -164,8 +164,9 @@ function fillPlaces(nodes, places, floats) {
 function validateProperty(source, path, type) {
   var value = source;
   var parts = path.split('.');
-  for (var i = 0; i < parts.length; i++) {
-    value = value[i];
+  for(var i in parts) {
+    var key = parts[i];
+    value = value[key];
   }
 
   var valid = type === 'array' ? value instanceof Array : typeof value !== type;
