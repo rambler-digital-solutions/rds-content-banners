@@ -169,7 +169,7 @@ function validateProperty(source, path, type) {
     value = value[key];
   }
 
-  var valid = type === 'array' ? value instanceof Array : typeof value !== type;
+  var valid = type === 'array' ? value instanceof Array : typeof value === type;
   if (!valid) {
     throw new Error('Property "' + path + '" of options have to be: ' + type + '.');
   }
