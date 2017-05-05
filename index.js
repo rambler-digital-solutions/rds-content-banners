@@ -103,7 +103,7 @@ function isApprovedByNext(nodes, index, place, floats) {
   return false;
 }
 
-function drawPlace(id, place) {
+function getAdfoxCallSettings(id, place) {
   var methodArguments;
   switch (place.method) {
     case 'show':
@@ -119,8 +119,8 @@ function drawPlace(id, place) {
       methodArguments = [id, place.bannerOptions, place.begunOptions, place.className];
       break;
   }
-
-  window.Adf.banner[place.method].apply(window.Adf.banner, methodArguments);
+  
+  return {name: place.method, arguments: methodArguments};
 }
 
 function fillPlaces(nodes, places, floats) {
@@ -152,9 +152,14 @@ function fillPlaces(nodes, places, floats) {
           index = ii + 1;
 
           // append mock for the place
-          var id = 'content-banner-' + index;
+          var id = 'content-banner-' + i;
           node.insertAdjacentHTML('afterEnd', '<div id="' + id + '"></div>');
-          drawPlace(id, place);
+          node.insertAdjacentHTML('afterEnd', '<!-- Banner called with following settings' + JSON.stringify(place) + ' -->');
+
+          // draw the banner
+          var callback = getAdfoxCallSettings(id ,place);
+          var method = window.Adf.banner[callback.name];
+          method.apply(method, callback.arguments);
           break;
         }
       }
