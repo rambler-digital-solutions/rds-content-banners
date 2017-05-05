@@ -154,7 +154,6 @@ function fillPlaces(nodes, places, floats) {
           // append mock for the place
           var id = 'content-banner-' + i;
           node.insertAdjacentHTML('afterEnd', '<div id="' + id + '"></div>');
-          node.insertAdjacentHTML('afterEnd', '<!-- Banner called with following settings' + JSON.stringify(place) + ' -->');
 
           // draw the banner
           var callback = getAdfoxCallSettings(id ,place);
