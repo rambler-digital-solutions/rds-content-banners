@@ -8,6 +8,8 @@ var getOwnPropertySymbols = Object.getOwnPropertySymbols;
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 var propIsEnumerable = Object.prototype.propertyIsEnumerable;
 
+var isDevelopment = window.location.hash.indexOf('development=1') !== -1;
+
 function toObject(val) {
   if (val === null || val === undefined) {
     throw new TypeError('Object.assign cannot be called with null or undefined');
@@ -45,7 +47,7 @@ function objectAssign(target, source) {
 
 function buildRootSelector(root, nodes) {
   var parts = [];
-  for(var i in nodes) {
+  for (var i in nodes) {
     var tag = nodes[i];
     parts.push(root + ' > ' + tag);
   }
@@ -119,8 +121,8 @@ function getAdfoxCallSettings(id, place) {
       methodArguments = [id, place.bannerOptions, place.begunOptions, place.className];
       break;
   }
-  
-  return {name: place.method, arguments: methodArguments};
+
+  return { name: place.method, arguments: methodArguments };
 }
 
 function fillPlaces(nodes, places, floats) {
@@ -156,9 +158,15 @@ function fillPlaces(nodes, places, floats) {
           node.insertAdjacentHTML('afterEnd', '<div id="' + id + '"></div>');
 
           // draw the banner
-          var callback = getAdfoxCallSettings(id ,place);
+          var callback = getAdfoxCallSettings(id, place);
           var method = window.Adf.banner[callback.name];
           method.apply(method, callback.arguments);
+
+          // log banner configuration if needed
+          if (isDevelopment) {
+            console.log('[content-banners] Call banner #' + id, callback.name, callback.arguments);
+          }
+
           break;
         }
       }
@@ -169,7 +177,7 @@ function fillPlaces(nodes, places, floats) {
 function validateProperty(source, path, type) {
   var value = source;
   var parts = path.split('.');
-  for(var i in parts) {
+  for (var i in parts) {
     var key = parts[i];
     value = value[key];
   }
