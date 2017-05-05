@@ -164,7 +164,7 @@ function fillPlaces(nodes, places, floats) {
 
           // log banner configuration if needed
           if (isDevelopment) {
-            console.log('[content-banners] Call banner #' + id, callback.name, callback.arguments);
+            console.log('[content-banners] Banner #' + id + ' has been called.', callback.name, callback.arguments);
           }
 
           break;
