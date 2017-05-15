@@ -212,11 +212,11 @@ module.exports = function(options) {
   var places = [];
   for (var i = 0; i < options.places.length; i++) {
     var place = objectAssign({}, defaults, options.places[i], { index: i });
-    validateProperty(options, 'places.' + i + '.offset', 'number');
-    validateProperty(options, 'places.' + i + '.haveToBeAtLeast', 'number');
-    validateProperty(options, 'places.' + i + '.className', 'string');
-    validateProperty(options, 'places.' + i + '.method', 'string');
-    validateProperty(options, 'places.' + i + '.bannerOptions', 'object');
+    validateProperty(place, 'offset', 'number');
+    validateProperty(place, 'haveToBeAtLeast', 'number');
+    validateProperty(place, 'className', 'string');
+    validateProperty(place, 'method', 'string');
+    validateProperty(place, 'bannerOptions', 'object');
     places.push(place);
   }
 
