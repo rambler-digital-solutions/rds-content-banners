@@ -1,7 +1,8 @@
 var defaults = {
   offset: 1000,
   haveToBeAtLeast: 500,
-  method: 'sspScroll'
+  method: 'sspScroll',
+  looped: false,
 };
 
 var getOwnPropertySymbols = Object.getOwnPropertySymbols;
@@ -125,53 +126,61 @@ function getAdfoxCallSettings(id, place) {
   return { name: place.method, arguments: methodArguments };
 }
 
-function fillPlaces(nodes, places, floats) {
-  var index = 0;
+function fillPlaces(nodes, places, floats, looped) {
+  var index = 0,
+      bannerIndex = 0;
   var stdout = '';
-  for (var i in places) {
-    var place = places[i];
-    for (var ii = index; ii < nodes.length; ii++) {
-      var node = nodes[ii];
-      var text = node.innerText;
-      index = ii;
+  
+  for (var i = 0; i < nodes.length; i++) {
+    var node = nodes[i];
+    var text = node.innerText;
+    var place = places[bannerIndex];
 
-      if (text) {
-        stdout += text;
+    index = i;
 
-        // get flags
-        var isTooLong = stdout.length > place.offset;
-        var isAllowedByLength = place.haveToBeAtLeast
-          ? getNodesLength(nodes, ii) > place.haveToBeAtLeast : true;
+    if (text) {
+      stdout += text;
 
-        // append mock if needed
-        if (isTooLong
-          && isAllowedByLength
-          && isApproved(nodes[ii])
-          && isApprovedByPrevious(nodes, ii, place, floats)
-          && isApprovedByNext(nodes, ii, place, floats)
-        ) {
-          stdout = '';
-          index = ii + 1;
+      // get flags
+      var isTooLong = stdout.length > place.offset;
+      var isAllowedByLength = place.haveToBeAtLeast
+        ? getNodesLength(nodes, i) > place.haveToBeAtLeast : true;
 
-          // append mock for the place
-          var id = 'content-banner-' + i;
-          node.insertAdjacentHTML('afterEnd', '<div id="' + id + '"></div>');
+      // append mock if needed
+      if (isTooLong
+        && isAllowedByLength
+        && isApproved(nodes[i])
+        && isApprovedByPrevious(nodes, i, place, floats)
+        && isApprovedByNext(nodes, i, place, floats)
+      ) {
+        stdout = '';
 
-          // draw the banner
-          var callback = getAdfoxCallSettings(id, place);
-          var method = window.Adf.banner[callback.name];
-          method.apply(method, callback.arguments);
+        // append mock for the place
+        var id = 'content-banner-' + i;
+        node.insertAdjacentHTML('afterEnd', '<div id="' + id + '"></div>');
 
-          // log banner configuration if needed
-          if (isDevelopment) {
-            console.log('[content-banners] Banner #' + id + ' has been called.', callback.name, callback.arguments);
-          }
+        // draw the banner
+        var callback = getAdfoxCallSettings(id, place);
+        var method = window.Adf.banner[callback.name];
+        method.apply(method, callback.arguments);
 
-          break;
+        if(looped){
+          bannerIndex = (bannerIndex+1 < places.length) ? bannerIndex+1 : 0;
+        } else {
+          bannerIndex++;
+          if(bannerIndex == places.length) break;
         }
+
+        // log banner configuration if needed
+        if (isDevelopment) {
+          console.log('[content-banners] Banner #' + id + ' has been called.', callback.name, callback.arguments);
+        }
+
+        //break;
       }
     }
   }
+
 }
 
 function validateProperty(source, path, type) {
@@ -232,6 +241,9 @@ module.exports = function(options) {
   var nodes = Array.prototype.slice.call(nodesList);
   var floats = Array.prototype.slice.call(floatsList);
 
+  // loop places
+  var looped = (options.looped) ? options.looped : defaults.looped;
+
   // fill the places
-  fillPlaces(nodes, places, floats);
+  fillPlaces(nodes, places, floats, looped);
 };
