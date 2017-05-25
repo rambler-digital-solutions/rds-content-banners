@@ -74,11 +74,16 @@ function getNodeLength(node) {
   return node && node.innerText ? node.innerText.length : 0;
 }
 
-function isApproved(node) {
-  return node.nodeName === 'P';
+function isApproved(node, options) {
+  for(var i in options.nodes){
+    if(node.matches(options.nodes[i])){
+      return true;
+      break;
+    }
+  }
 }
 
-function isApprovedByPrevious(nodes, index, place, floats) {
+function isApprovedByPrevious(nodes, index, place, floats, options) {
   var node = nodes[index - 1];
   if (!node) {
     return true;
@@ -93,22 +98,24 @@ function isApprovedByPrevious(nodes, index, place, floats) {
   return true;
 }
 
-function isApprovedByNext(nodes, index, place, floats) {
+function isApprovedByNext(nodes, index, place, floats, options) {
   var length = 0;
   for (var i = index + 1; i < nodes.length; i++) {
     var node = nodes[i];
-    if (node.nodeName === 'P') {
-      length += getNodeLength(node);
-      if (length >= place.haveToBeAtLeast) {
-        return true;
+    for(var ii in options.nodes){
+      if(node.matches(options.nodes[ii])){
+        length += getNodeLength(node);
+        if (length >= place.haveToBeAtLeast) {
+          return true;
+          break;
+        }
       }
-    } else {
-      return false;
     }
   }
 
   return false;
 }
+
 
 function getAdfoxCallSettings(id, place) {
   var methodArguments;
@@ -151,9 +158,9 @@ function fillPlaces(nodes, places, floats, options) {
       // append mock if needed
       if (isTooLong
         && isAllowedByLength
-        && isApproved(nodes[i])
-        && isApprovedByPrevious(nodes, i, place, floats)
-        && isApprovedByNext(nodes, i, place, floats)
+        && isApproved(nodes[i], options)
+        && isApprovedByPrevious(nodes, i, place, floats, options)
+        && isApprovedByNext(nodes, i, place, floats, options)
       ) {
         stdout = '';
 
@@ -166,8 +173,8 @@ function fillPlaces(nodes, places, floats, options) {
         var method = window.Adf.banner[callback.name];
         method.apply(method, callback.arguments);
 
-        if(options.looped){
-          bannerIndex = (bannerIndex+1 < places.length) ? bannerIndex+1 : 0;
+        if (options.looped) {
+          bannerIndex = (bannerIndex + 1 < places.length) ? bannerIndex + 1 : 0;
         } else {
           bannerIndex++;
           if(bannerIndex == places.length) break;
@@ -178,7 +185,6 @@ function fillPlaces(nodes, places, floats, options) {
           console.log('[content-banners] Banner #' + id + ' has been called.', callback.name, callback.arguments);
         }
 
-        //break;
       }
     }
   }
@@ -215,6 +221,19 @@ function deduplicate(array) {
 }
 
 module.exports = function(custom) {
+
+  //element match polyfill
+  /*
+  ​(function(e){
+    e.matches || (e.matches=e.matchesSelector||function(selector){
+      var matches = document.querySelectorAll(selector), th = this;
+      return Array.prototype.some.call(matches, function(e){
+         return e === th;
+      });
+    });
+  })(Element.prototype);
+  */
+
   validateProperty(custom, 'root', 'string');
   validateProperty(custom, 'places', 'array');
   validateProperty(custom, 'nodes', 'array');
@@ -239,8 +258,8 @@ module.exports = function(custom) {
   var nodesSelectors = deduplicate(options.nodes.concat(floatsSelectors));
 
   // get nodes lists
-  var nodesList = document.querySelectorAll(buildRootSelector(options.root, nodesSelectors));
-  var floatsList = document.querySelectorAll(buildRootSelector(options.root, floatsSelectors));
+  var nodesList = (nodesSelectors.length) ? document.querySelectorAll(buildRootSelector(options.root, nodesSelectors)) : [];
+  var floatsList = (floatsSelectors.length) ? document.querySelectorAll(buildRootSelector(options.root, floatsSelectors)) : [];
 
   // convert lists to the arrays
   var nodes = Array.prototype.slice.call(nodesList);
