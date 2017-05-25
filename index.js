@@ -39,7 +39,7 @@ function objectAssign(target, source) {
 
     if (getOwnPropertySymbols) {
       symbols = getOwnPropertySymbols(from);
-      for (var i = 0; i < symbols.length; i++) {
+      for (var i in symbols) {
         if (propIsEnumerable.call(from, symbols[i])) {
           to[symbols[i]] = from[symbols[i]];
         }
@@ -130,17 +130,15 @@ function getAdfoxCallSettings(id, place) {
   return { name: place.method, arguments: methodArguments };
 }
 
-function fillPlaces(nodes, places, floats, looped) {
-  var index = 0,
-      bannerIndex = 0;
+function fillPlaces(nodes, places, floats, options) {
+  var bannerIndex = 0;
   var stdout = '';
   
-  for (var i = 0; i < nodes.length; i++) {
+  for (var i in nodes){
+    i = +i;
     var node = nodes[i];
     var text = node.innerText;
     var place = places[bannerIndex];
-
-    index = i;
 
     if (text) {
       stdout += text;
@@ -168,7 +166,7 @@ function fillPlaces(nodes, places, floats, looped) {
         var method = window.Adf.banner[callback.name];
         method.apply(method, callback.arguments);
 
-        if(looped){
+        if(options.looped){
           bannerIndex = (bannerIndex+1 < places.length) ? bannerIndex+1 : 0;
         } else {
           bannerIndex++;
@@ -217,17 +215,17 @@ function deduplicate(array) {
 }
 
 module.exports = function(custom) {
+  validateProperty(custom, 'root', 'string');
+  validateProperty(custom, 'places', 'array');
+  validateProperty(custom, 'nodes', 'array');
+  validateProperty(custom, 'floats', 'array');
+  validateProperty(custom, 'looped', 'boolean');
+
   var options = objectAssign({}, defaults, custom);
 
-  validateProperty(options, 'root', 'string');
-  validateProperty(options, 'places', 'array');
-  validateProperty(options, 'nodes', 'array');
-  validateProperty(options, 'floats', 'array');
-  validateProperty(options, 'looped', 'boolen');
-
   var places = [];
-  for (var i = 0; i < options.places.length; i++) {
-    var place = objectAssign({}, defaults, options.places[i], { index: i });
+  for (var i in options.places) {
+    var place = objectAssign({}, placeDefaults, options.places[i], { index: i });
     validateProperty(place, 'offset', 'number');
     validateProperty(place, 'haveToBeAtLeast', 'number');
     validateProperty(place, 'className', 'string');
@@ -249,5 +247,5 @@ module.exports = function(custom) {
   var floats = Array.prototype.slice.call(floatsList);
 
   // fill the places
-  fillPlaces(nodes, places, floats, looped);
+  fillPlaces(nodes, places, floats, options);
 };
