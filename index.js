@@ -1,9 +1,13 @@
 var defaults = {
+  looped: false
+};
+
+var placeDefaults = {
   offset: 1000,
   haveToBeAtLeast: 500,
-  method: 'sspScroll',
-  looped: false,
+  method: 'sspScroll'
 };
+
 
 var getOwnPropertySymbols = Object.getOwnPropertySymbols;
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -212,11 +216,14 @@ function deduplicate(array) {
   return result;
 }
 
-module.exports = function(options) {
+module.exports = function(custom) {
+  var options = objectAssign({}, defaults, custom);
+
   validateProperty(options, 'root', 'string');
   validateProperty(options, 'places', 'array');
   validateProperty(options, 'nodes', 'array');
   validateProperty(options, 'floats', 'array');
+  validateProperty(options, 'looped', 'boolen');
 
   var places = [];
   for (var i = 0; i < options.places.length; i++) {
@@ -240,9 +247,6 @@ module.exports = function(options) {
   // convert lists to the arrays
   var nodes = Array.prototype.slice.call(nodesList);
   var floats = Array.prototype.slice.call(floatsList);
-
-  // loop places
-  var looped = (options.looped) ? options.looped : defaults.looped;
 
   // fill the places
   fillPlaces(nodes, places, floats, looped);
