@@ -146,6 +146,19 @@ function fillPlaces(nodes, places, floats, options) {
     var node = nodes[i];
     var text = node.innerText;
     var place = places[bannerIndex];
+    
+    // remove deleted banners place
+    if (options.looped && typeof place == 'undefined') {
+      places = places.reduce(function (placesNew, place, index) {
+        if (typeof place !== 'undefined') {
+          place.index = index;
+          placesNew.push(place);
+        }
+        return placesNew;
+      }, []);
+      
+      place = (bannerIndex < places.length) ? places[bannerIndex] : places[0];
+    }
 
     if (text) {
       stdout += text;
@@ -173,11 +186,15 @@ function fillPlaces(nodes, places, floats, options) {
         var method = window.Adf.banner[callback.name];
         method.apply(method, callback.arguments);
 
+        // To loop or not to loop, that is the question!
         if (options.looped) {
+          if (place.inLoop === false) {
+            delete places[bannerIndex];
+          }
           bannerIndex = (bannerIndex + 1 < places.length) ? bannerIndex + 1 : 0;
         } else {
-          bannerIndex++;
           if(bannerIndex == places.length) break;
+          bannerIndex++;
         }
 
         // log banner configuration if needed
@@ -222,17 +239,15 @@ function deduplicate(array) {
 
 module.exports = function(custom) {
 
-  //element match polyfill
-  /*
-  ​(function(e){
-    e.matches || (e.matches=e.matchesSelector||function(selector){
+  //Element.matches polyfill
+  (function(e){
+    e.matches || (e.matches = e.matchesSelector || function(selector){
       var matches = document.querySelectorAll(selector), th = this;
       return Array.prototype.some.call(matches, function(e){
          return e === th;
       });
     });
   })(Element.prototype);
-  */
 
   validateProperty(custom, 'root', 'string');
   validateProperty(custom, 'places', 'array');
@@ -249,6 +264,7 @@ module.exports = function(custom) {
     validateProperty(place, 'haveToBeAtLeast', 'number');
     validateProperty(place, 'className', 'string');
     validateProperty(place, 'method', 'string');
+    (place.inLoop) ? validateProperty(place, 'inLoop', 'boolean') : place.inLoop = false;
     validateProperty(place, 'bannerOptions', 'object');
     places.push(place);
   }
