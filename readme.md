@@ -58,6 +58,9 @@ var settings = {
         pct: 'a'
       },
 
+      // Вызывать баннер повторно, пока не закончится статья. (В основных настройках необходимо устрановить looped: true)
+      inLoop: fasle,
+
       // Опции бегуна, которые передаются в window.Adf.banners[method].
       begunOptions: {
         'begun-block-id': 432172892,

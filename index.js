@@ -100,6 +100,15 @@ function isApprovedByPrevious(nodes, index, place, floats, options) {
 
 function isApprovedByNext(nodes, index, place, floats, options) {
   var length = 0;
+
+  var nextNode = nodes[index + 1];
+  for (var i in floats) {
+    if (floats[i] === nextNode) {
+      return false;
+    }
+  }
+
+  //count text length after banner
   for (var i = index + 1; i < nodes.length; i++) {
     var node = nodes[i];
     for(var ii in options.nodes){
