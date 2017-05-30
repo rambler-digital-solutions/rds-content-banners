@@ -155,7 +155,11 @@ function fillPlaces(nodes, places, floats, options) {
     var node = nodes[i];
     var text = node.innerText;
     var place = places[bannerIndex];
-    
+
+    if (!text) {
+      continue;
+    }
+
     // remove deleted banners place
     if (options.looped && typeof place == 'undefined') {
       places = places.reduce(function (placesNew, place, index) {
@@ -169,50 +173,49 @@ function fillPlaces(nodes, places, floats, options) {
       place = (bannerIndex < places.length) ? places[bannerIndex] : places[0];
     }
 
-    if (text) {
-      stdout += text;
+    stdout += text;
 
-      // get flags
-      var isTooLong = stdout.length > place.offset;
-      var isAllowedByLength = place.haveToBeAtLeast
-        ? getNodesLength(nodes, i) > place.haveToBeAtLeast : true;
+    // get flags
+    var isTooLong = stdout.length > place.offset;
+    var isAllowedByLength = place.haveToBeAtLeast
+      ? getNodesLength(nodes, i) > place.haveToBeAtLeast : true;
 
-      // append mock if needed
-      if (isTooLong
-        && isAllowedByLength
-        && isApproved(nodes[i], options)
-        && isApprovedByPrevious(nodes, i, place, floats, options)
-        && isApprovedByNext(nodes, i, place, floats, options)
-      ) {
-        stdout = '';
+    // append mock if needed
+    if (isTooLong
+      && isAllowedByLength
+      && isApproved(nodes[i], options)
+      && isApprovedByPrevious(nodes, i, place, floats, options)
+      && isApprovedByNext(nodes, i, place, floats, options)
+    ) {
+      stdout = '';
 
-        // append mock for the place
-        var id = 'content-banner-' + i;
-        node.insertAdjacentHTML('afterEnd', '<div id="' + id + '"></div>');
+      // append mock for the place
+      var id = 'content-banner-' + i;
+      node.insertAdjacentHTML('afterEnd', '<div id="' + id + '"></div>');
 
-        // draw the banner
-        var callback = getAdfoxCallSettings(id, place);
-        var method = window.Adf.banner[callback.name];
-        method.apply(method, callback.arguments);
+      // draw the banner
+      var callback = getAdfoxCallSettings(id, place);
+      var method = window.Adf.banner[callback.name];
+      method.apply(method, callback.arguments);
 
-        // To loop or not to loop, that is the question!
-        if (options.looped) {
-          if (place.inLoop === false) {
-            delete places[bannerIndex];
-          }
-          bannerIndex = (bannerIndex + 1 < places.length) ? bannerIndex + 1 : 0;
-        } else {
-          if(bannerIndex == places.length) break;
-          bannerIndex++;
+      // To loop or not to loop, that is the question!
+      if (options.looped) {
+        if (place.inLoop === false) {
+          delete places[bannerIndex];
         }
-
-        // log banner configuration if needed
-        if (isDevelopment) {
-          console.log('[content-banners] Banner #' + id + ' has been called.', callback.name, callback.arguments);
-        }
-
+        bannerIndex = (bannerIndex + 1 < places.length) ? bannerIndex + 1 : 0;
+      } else {
+        if(bannerIndex == places.length) break;
+        bannerIndex++;
       }
+
+      // log banner configuration if needed
+      if (isDevelopment) {
+        console.log('[content-banners] Banner #' + id + ' has been called.', callback.name, callback.arguments);
+      }
+
     }
+    
   }
 
 }
