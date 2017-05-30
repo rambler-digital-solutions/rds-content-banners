@@ -2,6 +2,18 @@
 Скрипт для автоматической расстановки рекламных мест в контенте топика в зависимости от переданной конфигурации.
 
 
+### Установка через пакетный менеджер
+```bash
+npm i git+ssh://git@gitlab.rambler.ru/rds-media/advert-content-banners.git
+```
+
+Или через yarn:
+```bash
+yarn add git+ssh://git@gitlab.rambler.ru/rds-media/advert-content-banners.git
+```
+
+В компоненте есть все необходимые зависимости и полифилы.
+
 ### Пример использования на lenta.ru
 ```javascript
 // есть два варианта подключения:
