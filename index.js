@@ -1,14 +1,29 @@
 var defaults = {
+  looped: false
+};
+
+var placeDefaults = {
   offset: 1000,
+  looped: false,
   haveToBeAtLeast: 500,
   method: 'sspScroll'
 };
+
 
 var getOwnPropertySymbols = Object.getOwnPropertySymbols;
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 var propIsEnumerable = Object.prototype.propertyIsEnumerable;
 
 var isDevelopment = window.location.hash.indexOf('development=1') !== -1;
+
+(function(e){
+  e.matches || (e.matches = e.matchesSelector || function(selector){
+      var matches = document.querySelectorAll(selector), th = this;
+      return Array.prototype.some.call(matches, function(e){
+        return e === th;
+      });
+    });
+})(Element.prototype);
 
 function toObject(val) {
   if (val === null || val === undefined) {
@@ -34,7 +49,7 @@ function objectAssign(target, source) {
 
     if (getOwnPropertySymbols) {
       symbols = getOwnPropertySymbols(from);
-      for (var i = 0; i < symbols.length; i++) {
+      for (var i in symbols) {
         if (propIsEnumerable.call(from, symbols[i])) {
           to[symbols[i]] = from[symbols[i]];
         }
@@ -69,11 +84,16 @@ function getNodeLength(node) {
   return node && node.innerText ? node.innerText.length : 0;
 }
 
-function isApproved(node) {
-  return node.nodeName === 'P';
+function isApproved(node, options) {
+  for(var i in options.nodes){
+    if(node.matches(options.nodes[i])){
+      return true;
+      break;
+    }
+  }
 }
 
-function isApprovedByPrevious(nodes, index, place, floats) {
+function isApprovedByPrevious(nodes, index, place, floats, options) {
   var node = nodes[index - 1];
   if (!node) {
     return true;
@@ -88,22 +108,33 @@ function isApprovedByPrevious(nodes, index, place, floats) {
   return true;
 }
 
-function isApprovedByNext(nodes, index, place, floats) {
+function isApprovedByNext(nodes, index, place, floats, options) {
   var length = 0;
+
+  var nextNode = nodes[index + 1];
+  for (var i in floats) {
+    if (floats[i] === nextNode) {
+      return false;
+    }
+  }
+
+  //count text length after banner
   for (var i = index + 1; i < nodes.length; i++) {
     var node = nodes[i];
-    if (node.nodeName === 'P') {
-      length += getNodeLength(node);
-      if (length >= place.haveToBeAtLeast) {
-        return true;
+    for(var ii in options.nodes){
+      if(node.matches(options.nodes[ii])){
+        length += getNodeLength(node);
+        if (length >= place.haveToBeAtLeast) {
+          return true;
+          break;
+        }
       }
-    } else {
-      return false;
     }
   }
 
   return false;
 }
+
 
 function getAdfoxCallSettings(id, place) {
   var methodArguments;
@@ -125,50 +156,67 @@ function getAdfoxCallSettings(id, place) {
   return { name: place.method, arguments: methodArguments };
 }
 
-function fillPlaces(nodes, places, floats) {
-  var index = 0;
+function fillPlaces(nodes, places, floats, options) {
+  var bannerIndex = 0;
   var stdout = '';
-  for (var i in places) {
-    var place = places[i];
-    for (var ii = index; ii < nodes.length; ii++) {
-      var node = nodes[ii];
-      var text = node.innerText;
-      index = ii;
 
-      if (text) {
-        stdout += text;
+  var runtimePlaces = places;
+  var loopedPlaces = places.filter(function(place) {
+    return place.looped;
+  });
 
-        // get flags
-        var isTooLong = stdout.length > place.offset;
-        var isAllowedByLength = place.haveToBeAtLeast
-          ? getNodesLength(nodes, ii) > place.haveToBeAtLeast : true;
+  for (var i = 0; i < nodes.length; i++) {
+    var place = runtimePlaces[bannerIndex];
+    if (!place) {
+      break;
+    }
 
-        // append mock if needed
-        if (isTooLong
-          && isAllowedByLength
-          && isApproved(nodes[ii])
-          && isApprovedByPrevious(nodes, ii, place, floats)
-          && isApprovedByNext(nodes, ii, place, floats)
-        ) {
-          stdout = '';
-          index = ii + 1;
+    var node = nodes[i];
+    var text = node.innerText;
+    if (!text) {
+      continue;
+    }
 
-          // append mock for the place
-          var id = 'content-banner-' + i;
-          node.insertAdjacentHTML('afterEnd', '<div id="' + id + '"></div>');
+    stdout += text;
 
-          // draw the banner
-          var callback = getAdfoxCallSettings(id, place);
-          var method = window.Adf.banner[callback.name];
-          method.apply(method, callback.arguments);
+    // get flags
+    var isTooLong = stdout.length > place.offset;
+    var isAllowedByLength = place.haveToBeAtLeast
+      ? getNodesLength(nodes, i) > place.haveToBeAtLeast : true;
 
-          // log banner configuration if needed
-          if (isDevelopment) {
-            console.log('[content-banners] Banner #' + id + ' has been called.', callback.name, callback.arguments);
-          }
+    // append mock if needed
+    if (isTooLong
+      && isAllowedByLength
+      && isApproved(nodes[i], options)
+      && isApprovedByPrevious(nodes, i, place, floats, options)
+      && isApprovedByNext(nodes, i, place, floats, options)
+    ) {
+      stdout = '';
 
+      // append mock for the place
+      var id = 'content-banner-' + i;
+      node.insertAdjacentHTML('afterEnd', '<div id="' + id + '"></div>');
+
+      // draw the banner
+      var callback = getAdfoxCallSettings(id, place);
+      var method = window.Adf.banner[callback.name];
+      method.apply(method, callback.arguments);
+
+      // get next banner index
+      if (bannerIndex >= runtimePlaces.length - 1) {
+        if (options.looped && loopedPlaces.length) {
+          runtimePlaces = loopedPlaces;
+          bannerIndex = 0;
+        } else {
           break;
         }
+      } else {
+        bannerIndex++;
+      }
+
+      // log banner configuration if needed
+      if (isDevelopment) {
+        console.log('[content-banners] Banner #' + id + ' has been called.', callback.name, callback.arguments);
       }
     }
   }
@@ -203,19 +251,23 @@ function deduplicate(array) {
   return result;
 }
 
-module.exports = function(options) {
+module.exports = function(custom) {
+  var options = objectAssign({}, defaults, custom);
+
   validateProperty(options, 'root', 'string');
   validateProperty(options, 'places', 'array');
   validateProperty(options, 'nodes', 'array');
   validateProperty(options, 'floats', 'array');
+  validateProperty(options, 'looped', 'boolean');
 
   var places = [];
-  for (var i = 0; i < options.places.length; i++) {
-    var place = objectAssign({}, defaults, options.places[i], { index: i });
+  for (var i in options.places) {
+    var place = objectAssign({}, placeDefaults, options.places[i], { index: i });
     validateProperty(place, 'offset', 'number');
     validateProperty(place, 'haveToBeAtLeast', 'number');
     validateProperty(place, 'className', 'string');
     validateProperty(place, 'method', 'string');
+    validateProperty(place, 'looped', 'boolean');
     validateProperty(place, 'bannerOptions', 'object');
     places.push(place);
   }
@@ -225,13 +277,13 @@ module.exports = function(options) {
   var nodesSelectors = deduplicate(options.nodes.concat(floatsSelectors));
 
   // get nodes lists
-  var nodesList = document.querySelectorAll(buildRootSelector(options.root, nodesSelectors));
-  var floatsList = document.querySelectorAll(buildRootSelector(options.root, floatsSelectors));
+  var nodesList = (nodesSelectors.length) ? document.querySelectorAll(buildRootSelector(options.root, nodesSelectors)) : [];
+  var floatsList = (floatsSelectors.length) ? document.querySelectorAll(buildRootSelector(options.root, floatsSelectors)) : [];
 
   // convert lists to the arrays
   var nodes = Array.prototype.slice.call(nodesList);
   var floats = Array.prototype.slice.call(floatsList);
 
   // fill the places
-  fillPlaces(nodes, places, floats);
+  fillPlaces(nodes, places, floats, options);
 };
