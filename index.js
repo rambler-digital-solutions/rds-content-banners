@@ -4,6 +4,7 @@ var defaults = {
 
 var placeDefaults = {
   offset: 1000,
+  looped: false,
   haveToBeAtLeast: 500,
   method: 'sspScroll'
 };
@@ -251,13 +252,13 @@ function deduplicate(array) {
 }
 
 module.exports = function(custom) {
-  validateProperty(custom, 'root', 'string');
-  validateProperty(custom, 'places', 'array');
-  validateProperty(custom, 'nodes', 'array');
-  validateProperty(custom, 'floats', 'array');
-  validateProperty(custom, 'looped', 'boolean');
-
   var options = objectAssign({}, defaults, custom);
+
+  validateProperty(options, 'root', 'string');
+  validateProperty(options, 'places', 'array');
+  validateProperty(options, 'nodes', 'array');
+  validateProperty(options, 'floats', 'array');
+  validateProperty(options, 'looped', 'boolean');
 
   var places = [];
   for (var i in options.places) {
@@ -266,7 +267,7 @@ module.exports = function(custom) {
     validateProperty(place, 'haveToBeAtLeast', 'number');
     validateProperty(place, 'className', 'string');
     validateProperty(place, 'method', 'string');
-    (place.inLoop) ? validateProperty(place, 'inLoop', 'boolean') : place.inLoop = false;
+    validateProperty(place, 'looped', 'boolean');
     validateProperty(place, 'bannerOptions', 'object');
     places.push(place);
   }
