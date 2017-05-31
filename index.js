@@ -15,6 +15,15 @@ var propIsEnumerable = Object.prototype.propertyIsEnumerable;
 
 var isDevelopment = window.location.hash.indexOf('development=1') !== -1;
 
+(function(e){
+  e.matches || (e.matches = e.matchesSelector || function(selector){
+      var matches = document.querySelectorAll(selector), th = this;
+      return Array.prototype.some.call(matches, function(e){
+        return e === th;
+      });
+    });
+})(Element.prototype);
+
 function toObject(val) {
   if (val === null || val === undefined) {
     throw new TypeError('Object.assign cannot be called with null or undefined');
@@ -208,11 +217,8 @@ function fillPlaces(nodes, places, floats, options) {
       if (isDevelopment) {
         console.log('[content-banners] Banner #' + id + ' has been called.', callback.name, callback.arguments);
       }
-
     }
-
   }
-
 }
 
 function validateProperty(source, path, type) {
@@ -245,17 +251,6 @@ function deduplicate(array) {
 }
 
 module.exports = function(custom) {
-
-  //Element.matches polyfill
-  (function(e){
-    e.matches || (e.matches = e.matchesSelector || function(selector){
-      var matches = document.querySelectorAll(selector), th = this;
-      return Array.prototype.some.call(matches, function(e){
-         return e === th;
-      });
-    });
-  })(Element.prototype);
-
   validateProperty(custom, 'root', 'string');
   validateProperty(custom, 'places', 'array');
   validateProperty(custom, 'nodes', 'array');
