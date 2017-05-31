@@ -149,28 +149,22 @@ function getAdfoxCallSettings(id, place) {
 function fillPlaces(nodes, places, floats, options) {
   var bannerIndex = 0;
   var stdout = '';
-  
-  for (var i in nodes){
-    i = +i;
-    var node = nodes[i];
-    var text = node.innerText;
-    var place = places[bannerIndex];
 
-    if (!text) {
-      continue;
+  var runtimePlaces = places;
+  var loopedPlaces = places.filter(function(place) {
+    return place.looped;
+  });
+
+  for (var i = 0; i < nodes.length; i++) {
+    var place = runtimePlaces[bannerIndex];
+    if (!place) {
+      break;
     }
 
-    // remove deleted banners place
-    if (options.looped && typeof place == 'undefined') {
-      places = places.reduce(function (placesNew, place, index) {
-        if (typeof place !== 'undefined') {
-          place.index = index;
-          placesNew.push(place);
-        }
-        return placesNew;
-      }, []);
-      
-      place = (bannerIndex < places.length) ? places[bannerIndex] : places[0];
+    var node = nodes[i];
+    var text = node.innerText;
+    if (!text) {
+      continue;
     }
 
     stdout += text;
@@ -198,14 +192,15 @@ function fillPlaces(nodes, places, floats, options) {
       var method = window.Adf.banner[callback.name];
       method.apply(method, callback.arguments);
 
-      // To loop or not to loop, that is the question!
-      if (options.looped) {
-        if (place.inLoop === false) {
-          delete places[bannerIndex];
+      // get next banner index
+      if (bannerIndex >= runtimePlaces.length - 1) {
+        if (options.looped && loopedPlaces.length) {
+          runtimePlaces = loopedPlaces;
+          bannerIndex = 0;
+        } else {
+          break;
         }
-        bannerIndex = (bannerIndex + 1 < places.length) ? bannerIndex + 1 : 0;
       } else {
-        if(bannerIndex == places.length) break;
         bannerIndex++;
       }
 
@@ -215,7 +210,7 @@ function fillPlaces(nodes, places, floats, options) {
       }
 
     }
-    
+
   }
 
 }
