@@ -139,10 +139,8 @@ function getNodeLength(node) {
 }
 
 function isApproved(node, options) {
-  // текущая нода должна быть блоком контента или заголовком
-  // из списка переданных по умолчанию селекторов
-  return options.contentTags.includes(node.nodeName)
-    || options.headersTags.includes(node.nodeName);
+  // текущая нода должна быть блоком контента (параграфом)
+  return options.contentTags.includes(node.nodeName);
 }
 
 function isApprovedByPrevious(nodes, index, place, floats, options) {
@@ -151,13 +149,7 @@ function isApprovedByPrevious(nodes, index, place, floats, options) {
     return true;
   }
 
-  // предыдущая нода должна быть параграфом
-  if (!options.contentTags.includes(previousNode.nodeName)) {
-    return false;
-  }
-
-  // предыдущая нода не должна быть плавающей,
-  // то есть не должна входить в список селекторов `floats`
+  // предыдущая нода не должна быть плавающей
   for (var i in floats) {
     if (floats[i] === previousNode) {
       return false;
@@ -169,6 +161,9 @@ function isApprovedByPrevious(nodes, index, place, floats, options) {
 
 function isApprovedByNext(nodes, index, place, floats, options) {
   var nextNode = nodes[index + 1];
+  if (!nextNode) {
+    return false;
+  }
 
   // следующая нода должна быть параграфом или заголовком
   if (!options.contentTags.includes(nextNode.nodeName)
@@ -177,8 +172,7 @@ function isApprovedByNext(nodes, index, place, floats, options) {
     return false;
   }
 
-  // следующая нода не должна быть плавающей,
-  // то есть не должна входить в список селекторов `floats`
+  // следующая нода не должна быть плавающей
   for (var i in floats) {
     if (floats[i] === nextNode) {
       return false;
