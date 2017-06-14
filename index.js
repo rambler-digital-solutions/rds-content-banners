@@ -1,4 +1,6 @@
 var defaults = {
+  contentTags: ['P'],
+  headersTags: ['H1', 'H2', 'H3', 'H4', 'H5', 'H6'],
   looped: false
 };
 
@@ -9,21 +11,73 @@ var placeDefaults = {
   method: 'sspScroll'
 };
 
-
 var getOwnPropertySymbols = Object.getOwnPropertySymbols;
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 var propIsEnumerable = Object.prototype.propertyIsEnumerable;
 
-var isDevelopment = window.location.hash.indexOf('development=1') !== -1;
+var isDevelopment = window.location.hash.includes('development=1');
 
-(function(e){
-  e.matches || (e.matches = e.matchesSelector || function(selector){
-      var matches = document.querySelectorAll(selector), th = this;
-      return Array.prototype.some.call(matches, function(e){
-        return e === th;
-      });
+if (!Element.prototype.matches) {
+  if (Element.prototype.matchesSelector) {
+    Element.prototype.matches = Element.prototype.matchesSelector;
+  }
+
+  Element.prototype.matches = function(selector) {
+    var matches = document.querySelectorAll(selector), th = this;
+    return Array.prototype.some.call(matches, function(e) {
+      return e === th;
     });
-})(Element.prototype);
+  };
+}
+
+if (!String.prototype.includes) {
+  String.prototype.includes = function(search, start) {
+    'use strict';
+    if (typeof start !== 'number') {
+      start = 0;
+    }
+
+    if (start + search.length > this.length) {
+      return false;
+    } else {
+      return this.indexOf(search, start) !== -1;
+    }
+  };
+}
+
+if (!Array.prototype.includes) {
+  // https://tc39.github.io/ecma262/#sec-array.prototype.includes
+  Object.defineProperty(Array.prototype, 'includes', {
+    value: function(searchElement, fromIndex) {
+      if (this == null) {
+        throw new TypeError('"this" is null or not defined');
+      }
+
+      var o = Object(this);
+      var len = o.length >>> 0;
+      if (len === 0) {
+        return false;
+      }
+
+      var n = fromIndex | 0;
+      var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+
+      function sameValueZero(x, y) {
+        return x === y || (typeof x === 'number' && typeof y === 'number' && isNaN(x) && isNaN(y));
+      }
+
+      while (k < len) {
+        if (sameValueZero(o[k], searchElement)) {
+          return true;
+        }
+
+        k++;
+      }
+
+      return false;
+    }
+  });
+}
 
 function toObject(val) {
   if (val === null || val === undefined) {
@@ -85,22 +139,27 @@ function getNodeLength(node) {
 }
 
 function isApproved(node, options) {
-  for(var i in options.nodes){
-    if(node.matches(options.nodes[i])){
-      return true;
-      break;
-    }
-  }
+  // текущая нода должна быть блоком контента или заголовком
+  // из списка переданных по умолчанию селекторов
+  return options.contentTags.includes(node.nodeName)
+    || options.headersTags.includes(node.nodeName);
 }
 
 function isApprovedByPrevious(nodes, index, place, floats, options) {
-  var node = nodes[index - 1];
-  if (!node) {
+  var previousNode = nodes[index - 1];
+  if (!previousNode) {
     return true;
   }
 
+  // предыдущая нода должна быть параграфом
+  if (!options.contentTags.includes(previousNode.nodeName)) {
+    return false;
+  }
+
+  // предыдущая нода не должна быть плавающей,
+  // то есть не должна входить в список селекторов `floats`
   for (var i in floats) {
-    if (floats[i] === node) {
+    if (floats[i] === previousNode) {
       return false;
     }
   }
@@ -109,32 +168,40 @@ function isApprovedByPrevious(nodes, index, place, floats, options) {
 }
 
 function isApprovedByNext(nodes, index, place, floats, options) {
-  var length = 0;
-
   var nextNode = nodes[index + 1];
+
+  // следующая нода должна быть параграфом или заголовком
+  if (!options.contentTags.includes(nextNode.nodeName)
+    && !options.headersTags.includes(nextNode.nodeName)
+  ) {
+    return false;
+  }
+
+  // следующая нода не должна быть плавающей,
+  // то есть не должна входить в список селекторов `floats`
   for (var i in floats) {
     if (floats[i] === nextNode) {
       return false;
     }
   }
 
-  //count text length after banner
+  // после предполагаемого места вставки рекламы
+  // должно быть определенное количество символов
+  var length = 0;
   for (var i = index + 1; i < nodes.length; i++) {
     var node = nodes[i];
-    for(var ii in options.nodes){
-      if(node.matches(options.nodes[ii])){
-        length += getNodeLength(node);
-        if (length >= place.haveToBeAtLeast) {
-          return true;
-          break;
-        }
+    if (options.contentTags.includes(node.nodeName)
+      || options.headersTags.includes(node.nodeName)
+    ) {
+      length += getNodeLength(node);
+      if (length >= place.haveToBeAtLeast) {
+        return true;
       }
     }
   }
 
   return false;
 }
-
 
 function getAdfoxCallSettings(id, place) {
   var methodArguments;
@@ -153,7 +220,7 @@ function getAdfoxCallSettings(id, place) {
       break;
   }
 
-  return { name: place.method, arguments: methodArguments };
+  return {name: place.method, arguments: methodArguments};
 }
 
 function fillPlaces(nodes, places, floats, options) {
@@ -262,7 +329,7 @@ module.exports = function(custom) {
 
   var places = [];
   for (var i in options.places) {
-    var place = objectAssign({}, placeDefaults, options.places[i], { index: i });
+    var place = objectAssign({}, placeDefaults, options.places[i], {index: i});
     validateProperty(place, 'offset', 'number');
     validateProperty(place, 'haveToBeAtLeast', 'number');
     validateProperty(place, 'className', 'string');
