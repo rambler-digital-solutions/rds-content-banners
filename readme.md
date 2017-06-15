@@ -4,7 +4,7 @@
 
 ### Установка через пакетный менеджер
 ```bash
-npm i git+ssh://git@gitlab.rambler.ru/rds-media/advert-content-banners.git
+npm i git+ssh://git@gitlab.rambler.ru/rds-media/advert-content-banners.git --save
 ```
 
 Или через yarn:
