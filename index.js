@@ -8,7 +8,8 @@ var placeDefaults = {
   offset: 1000,
   looped: false,
   haveToBeAtLeast: 500,
-  method: 'sspScroll'
+  method: 'sspScroll',
+  sibling_id: ''
 };
 
 var getOwnPropertySymbols = Object.getOwnPropertySymbols;
@@ -256,7 +257,9 @@ function fillPlaces(nodes, places, floats, options) {
 
       // append mock for the place
       var id = 'content-banner-' + i;
-      node.insertAdjacentHTML('afterEnd', '<div id="' + id + '"></div>');
+      var banner = '<div id="' + id + '"></div>';
+      var sibling = place.sibling_id ? '<div id="' + place.sibling_id + '"></div>' : '';
+      node.insertAdjacentHTML('afterEnd', banner + sibling);
 
       // draw the banner
       var callback = getAdfoxCallSettings(id, place);
@@ -329,6 +332,7 @@ module.exports = function(custom) {
     validateProperty(place, 'className', 'string');
     validateProperty(place, 'method', 'string');
     validateProperty(place, 'looped', 'boolean');
+    validateProperty(place, 'sibling_id', 'string');
     validateProperty(place, 'bannerOptions', 'object');
     places.push(place);
   }
