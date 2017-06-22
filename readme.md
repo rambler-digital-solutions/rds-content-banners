@@ -64,7 +64,7 @@ var settings = {
 
       // Если рядом с рекламным баннером должен быть пустой div с конкретным id,
       // то это можно сделать через это свойство. Актуально для in_read баннеров.
-      sibling_id: 'in_read',
+      siblingId: 'in_read',
 
       // Опции баннера, которые передаются в window.Adf.banners[method].
       bannerOptions: {
