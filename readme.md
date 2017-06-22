@@ -4,7 +4,7 @@
 
 ### Установка через пакетный менеджер
 ```bash
-npm i git+ssh://git@gitlab.rambler.ru/rds-media/advert-content-banners.git
+npm i git+ssh://git@gitlab.rambler.ru/rds-media/advert-content-banners.git --save
 ```
 
 Или через yarn:
@@ -61,6 +61,10 @@ var settings = {
 
       // Класс, который передается в window.Adf.banners[method].
       className: '.banner',
+
+      // Если рядом с рекламным баннером должен быть пустой div с конкретным id,
+      // то это можно сделать через это свойство. Актуально для in_read баннеров.
+      siblingId: 'in_read',
 
       // Опции баннера, которые передаются в window.Adf.banners[method].
       bannerOptions: {
