@@ -1,12 +1,19 @@
 {
-  "name": "advert-content-banners",
-  "version": "1.1.3",
+  "name": "rds-content-banners",
+  "version": "1.2.0",
   "description": "",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "author": "Pavel Kondratenko <p.kondratenko@rambler-co.ru> (http://rambler-co.ru)",
+  "license": "MIT",
+  "devDependencies": {
+    "webpack": "3.2.0"
   },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {}
+  "scripts": {
+    "example": "open example/index.html",
+    "example:build": "webpack --config ./example/config.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rambler-digital-solutions/rambler-webpack-boilerplate"
+  }
 }
