@@ -4,13 +4,19 @@
 
 ### Установка через пакетный менеджер
 ```bash
-npm i git+ssh://git@gitlab.rambler.ru/rds-media/advert-content-banners.git --save
+npm i rds-content-banners --save
 ```
 
 Или через yarn:
 ```bash
-yarn add git+ssh://git@gitlab.rambler.ru/rds-media/advert-content-banners.git
+yarn add rds-content-banners
 ```
+
+### Демонстрация функционала
+```bash
+open ./node_modules/rds-content-banners/example/index.html
+```
+
 
 В компоненте есть все необходимые зависимости и полифилы.
 
