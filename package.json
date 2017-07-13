@@ -5,9 +5,12 @@
   "main": "index.js",
   "author": "Pavel Kondratenko <p.kondratenko@rambler-co.ru> (http://rambler-co.ru)",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "webpack": "3.2.0"
+  },
   "scripts": {
-    "example": "open https://motor.ru/reports/unlim500.htm#development=1"
+    "example": "open example/index.html",
+    "example:build": "webpack --config ./example/config.js"
   },
   "repository": {
     "type": "git",
