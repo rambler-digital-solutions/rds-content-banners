@@ -1,7 +1,11 @@
 ## Advert (adfox) content banners
 Скрипт для автоматической расстановки рекламных мест в контенте топика в зависимости от переданной конфигурации.
 
-В комплекте идут все необходимые зависимости и полифилы.
+В комплекте с пакетом идет демо на примере сайта motor.ru и вы можете [посмотреть его прямо сейчас](https://rambler-digital-solutions.github.io/rds-content-banners/example/index.html#development=1).
+Также в пакете уже есть все необходимые зависимости и полифилы.
+
+Заметили ошибку?
+Пожалуйста, [создайте issue](https://github.com/rambler-digital-solutions/rds-content-banners/issues/new) или [pull request](https://github.com/rambler-digital-solutions/rds-content-banners/compare)!
 
 ### Установка через пакетный менеджер
 ```bash
