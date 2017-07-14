@@ -19,7 +19,7 @@ yarn add rds-content-banners
 Вот как выглядит одно из баннерных мест в этом примере.
 <br/><br/>![Заглушка баннера](docs/sample-banner-in-motor.png)<br/>
 
-[Посмотрите пример работы скрипта на github pages](https://rambler-digital-solutions.github.io/rds-content-banners/example/index.html#development=1) или откройте его локально: после установки пакета запустите команду из корневой дерктории проекта:
+[Посмотрите пример работы скрипта на github pages](https://rambler-digital-solutions.github.io/rds-content-banners/example/index.html#development=1). Чтобы открыть этот пример локально, после установки пакета, запустите команду из корневой дерктории проекта:
 ```bash
 open ./node_modules/rds-content-banners/example/index.html
 ```
