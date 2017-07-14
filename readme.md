@@ -32,10 +32,8 @@ open ./node_modules/rds-content-banners/example/index.html
 
 ### Пример использования на lenta.ru
 ```javascript
-// есть два варианта подключения:
-//  1. как npm пакет: var contentBanners = require('advert-content-banners');
-//  2. как commonjs модуль из проекта: var contentBanners = require('path/to/advert-content-banners-index');
-var contentBanners = require('advert-content-banners');
+// подключаем как npm пакет: var contentBanners = require('rds-content-banners');
+var contentBanners = require('rds-content-banners');
 
 
 // определяем коллекциию настроек для баннеров
@@ -104,7 +102,7 @@ var settings = {
   ]
 };
 
-contentBanners();
+contentBanners(settings);
 ```
 
 ### Более детально про конфигурацию
