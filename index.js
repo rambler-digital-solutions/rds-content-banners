@@ -185,13 +185,15 @@ function isApprovedByNext(nodes, index, place, floats, options) {
   var length = 0;
   for (var i = index + 1; i < nodes.length; i++) {
     var node = nodes[i];
-    if (options.contentTags.includes(node.nodeName)
-      || options.headersTags.includes(node.nodeName)
-    ) {
-      length += getNodeLength(node);
-      if (length >= place.haveToBeAtLeast) {
-        return true;
-      }
+    var isContentTag = options.contentTags.includes(node.nodeName);
+    var isHeaderTag = options.headersTags.includes(node.nodeName);
+    if (!isContentTag && !isHeaderTag) {
+      return false;
+    }
+
+    length += getNodeLength(node);
+    if (length >= place.haveToBeAtLeast) {
+      return true;
     }
   }
 
@@ -280,7 +282,8 @@ function fillPlaces(nodes, places, floats, options) {
 
       // log banner configuration if needed
       if (isDevelopment) {
-        console.log('[content-banners] Banner #' + id + ' has been called.', callback.name, callback.arguments);
+        console.info('[rds-content-banners] [#' + id + '] Баннер был инициализирован с помощью метода ' + callback.name + ' (параметры инициализации ниже).');
+        console.log({id: id, method: callback.name, el: node, arguments: callback.arguments});
       }
     }
   }
