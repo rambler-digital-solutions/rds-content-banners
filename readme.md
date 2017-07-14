@@ -15,11 +15,11 @@ yarn add rds-content-banners
 
 ### Демонстрация функционала
 В пакет включена демо страница с сайта motor.ru ["Копья судьбы"](https://motor.ru/reports/unlim500.htm#development=1) (из страницы убран весь не относящийся к делу контент и функционал).
-[Посмотрите этот пример на github pages](https://rambler-digital-solutions.github.io/rds-content-banners/example/index.html#development=1).
+
 Вот как выглядит одно из баннерных мест в этом примере.
 <br/><br/>![Заглушка баннера](docs/sample-banner-in-motor.png)<br/>
 
-Чтобы открыть этот пример локально, после установки пакета запустите команду из корневой дерктории проекта.
+[Посмотрите пример работы скрипта на github pages](https://rambler-digital-solutions.github.io/rds-content-banners/example/index.html#development=1) или откройте его локально: после установки пакета запустите команду из корневой дерктории проекта:
 ```bash
 open ./node_modules/rds-content-banners/example/index.html
 ```
