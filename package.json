@@ -10,7 +10,7 @@
   },
   "scripts": {
     "example": "open example/index.html",
-    "example:build": "webpack --config ./example/config.js"
+    "example:build": "webpack --config ./example/webpack.js"
   },
   "repository": {
     "type": "git",
