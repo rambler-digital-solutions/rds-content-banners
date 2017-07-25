@@ -10,7 +10,7 @@ var placeDefaults = {
   haveToBeAtLeast: 500,
   method: 'sspScroll',
   siblingId: '',
-  position: 'afterEnd'
+  position: 'afterend'
 };
 
 var getOwnPropertySymbols = Object.getOwnPropertySymbols;
