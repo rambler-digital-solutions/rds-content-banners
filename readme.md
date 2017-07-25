@@ -80,6 +80,11 @@ var settings = {
       // то это можно сделать через это свойство. Актуально для in_read баннеров.
       siblingId: 'in_read',
 
+      // Указывает положение рекламного блока относительно элемента контейнера.
+      // Должно быть валидным свойством position метода insertAdjacentHTML().
+      // https://developer.mozilla.org/ru/docs/Web/API/Element/insertAdjacentHTML
+      position: 'afterend',
+
       // Опции баннера, которые передаются в window.Adf.banners[method].
       bannerOptions: {
         p1: 'bujkh',
